@@ -3,9 +3,7 @@ import logging
 import schedule
 from generate_caption import get_random_content, generate_caption  # Correct imports
 from publish_facebook import publish_facebook_post
-from publish_instagram import upload_and_publish_reel
-from generate_voiceover import generate_voiceover
-from generate_image_to_video import create_cinematic_pan
+from publish_instagram import publish_instagram_post
 
 # Set up logging
 logging.basicConfig(filename="logs/publisher.log", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
@@ -25,33 +23,29 @@ def run_posting():
 
         caption = generate_caption(text)
         logging.info(f"✍️ Generated Caption: {caption}")
-        
-        # Get first sentence of Generated Caption the limit are "." or "!" or "?"
-        FirstSentence = caption.split(".")[0]
-        FirstSentence = FirstSentence.split("!")[0]
-        FirstSentence = FirstSentence.split("?")[0]
-        logging.info(f"✍️ Generated First Sentence: {FirstSentence}")
-        
-        # Generate audio
-        logging.info("🔊 Generating voice-over...")
-        generate_voiceover(FirstSentence)
-        
-        create_cinematic_pan("image.jpeg", "logo.png", "footer.png", "audio.mp3")
-        
-        # Post on Facebook
-        logging.info("📤 Publishing post on Facebook...")
-        publish_facebook_post(caption, "final_video.mp4", is_video=True)
 
-        # Post on Instagram
+        # Publish on Facebook
+        logging.info("📤 Publishing post on Facebook...")
+        fb_response = publish_facebook_post(caption, image)
+        logging.info(f"✅ Facebook Post Response: {fb_response}")
+
+        # Publish on Instagram
         logging.info("📤 Publishing post on Instagram...")
-        upload_and_publish_reel("final_video.mp4", caption)
+        insta_response = publish_instagram_post(image, caption)
+        logging.info(f"✅ Instagram Post Response: {insta_response}")
 
         logging.info("🎉 Post successfully published on both platforms!")
 
     except Exception as e:
         logging.error(f"❌ Error while posting: {str(e)}")
 
-schedule.every().day.at("12:00").do(run_posting)
+# Schedule the posting at specific times
+schedule.every().day.at("09:10").do(run_posting)
+schedule.every().day.at("11:00").do(run_posting)
+schedule.every().day.at("13:00").do(run_posting)
+schedule.every().day.at("15:00").do(run_posting)
+schedule.every().day.at("17:00").do(run_posting)
+schedule.every().day.at("19:00").do(run_posting)
 
 if __name__ == "__main__":
     logging.info("🔄 Starting Facebook & Instagram Publisher Service...")

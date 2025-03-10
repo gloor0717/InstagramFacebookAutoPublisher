@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import random
 from urllib.parse import urljoin
 from config import SCRAPER_LINKS  # Import the list from config.py
+import os
 
 def get_page_content(url):
     try:
@@ -43,6 +44,18 @@ def get_page_content(url):
         print(f"Erreur lors de la récupération de la page : {e}")
         return None, None, None
 
+def download_image(image_url, folder_path):
+    try:
+        response = requests.get(image_url, stream=True)
+        response.raise_for_status()
+        image_path = os.path.join(folder_path, "image.jpeg")
+        with open(image_path, 'wb') as file:
+            for chunk in response.iter_content(1024):
+                file.write(chunk)
+        print(f"Image téléchargée : {image_path}")
+    except requests.RequestException as e:
+        print(f"Erreur lors du téléchargement de l'image : {e}")
+
 # Sélectionner une URL aléatoire depuis SCRAPER_LINKS
 random_url = random.choice(SCRAPER_LINKS)
 print(f"URL sélectionnée : {random_url}")
@@ -55,5 +68,8 @@ if text_content:
     print("Texte récupéré :", text_content[:500], "...")  # Afficher 500 premiers caractères
     print("Toutes les images trouvées :", all_images)
     print("Image sélectionnée :", selected_image if selected_image else "Aucune image trouvée")
+    if selected_image:
+        # Télécharger l'image sélectionnée
+        download_image(selected_image, os.path.dirname(__file__))
 else:
     print("Aucun contenu récupéré.")
